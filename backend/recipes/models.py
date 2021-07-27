@@ -1,26 +1,37 @@
-from colorfield.fields import ColorField  # noqa
-from django.contrib.auth import get_user_model
+from django.core.validators import RegexValidator, MinValueValidator
 from django.db import models
+from django.contrib.auth import get_user_model
+
+from colorfield.fields import ColorField
 
 User = get_user_model()
 
 
 class Tag(models.Model):
     name = models.CharField(
-        verbose_name='Название тега',
+        verbose_name='Название',
         help_text='Введите название тега',
-        max_length=50,
-
+        max_length=200,
+        unique=True,
     )
     color = ColorField(
-        verbose_name='Цвет',
-        help_text='Введите цвет тега',
-        default='#FF0000'
+        verbose_name='Цвет в HEX',
+        help_text='Введите цвет тега в HEX',
+        unique=True,
+        null=True,
     )
     slug = models.CharField(
-        verbose_name='Название слаг тега',
-        help_text='Введите название слаг тега',
-        max_length=50,
+        verbose_name='Уникальный слаг',
+        help_text='Введите уникальный слаг',
+        max_length=200,
+        unique=True,
+        null=True,
+        validators=[
+            RegexValidator(
+                regex=r'^[-a-zA-Z0-9_]+$',
+                message='Недопустимые символы.'
+            )
+        ]
     )
 
     def __str__(self):
@@ -33,22 +44,15 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
-    class MeasurementChoice(models.TextChoices):
-        KILOGRAMM = 'кг', 'кг'
-        GRAMM = 'г', 'г'
-
     name = models.CharField(
         verbose_name='Ингреиент',
         help_text='Введите название ингредиента',
-        max_length=70,
+        max_length=200,
     )
     measurement_unit = models.CharField(
         verbose_name='Единица изменения',
         help_text='Выберите единицу измерения',
-        choices=MeasurementChoice.choices,
-        default=MeasurementChoice.GRAMM,
-        max_length=2,
-
+        max_length=200,
     )
 
     def __str__(self):
@@ -64,22 +68,22 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         verbose_name='Автор',
+        related_name='recipes',
         help_text='Укажите автора рецепта',
         on_delete=models.SET('Пользователь удалён'),
     )
     name = models.CharField(
         verbose_name='Название',
         help_text='Введите название рецепта',
-        max_length=100,
+        max_length=200,
     )
     image = models.ImageField(
         verbose_name='Картинка',
         help_text='Выберите изображение',
     )
-    text = models.CharField(
-        verbose_name='Текстовое описание',
+    text = models.TextField(
+        verbose_name='Описание',
         help_text='Опишите рецепт',
-        max_length=1000,
     )
     ingredients = models.ManyToManyField(
         Ingredient,
@@ -94,7 +98,10 @@ class Recipe(models.Model):
     cooking_time = models.SmallIntegerField(
         verbose_name='Время приготовления(минуты)',
         help_text='Укажите время приготовления в минутах',
+        validators=[MinValueValidator(1, 'Значение не может быть меньше 1')],
     )
+    pub_date = models.DateTimeField(
+        auto_now_add=True, verbose_name='Дата публикации')
 
     def __str__(self):
         return self.name
@@ -102,7 +109,7 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
-        ordering = ('name',)
+        ordering = ('-pub_date',)
 
 
 class RecipeIngredient(models.Model):
@@ -125,7 +132,7 @@ class RecipeIngredient(models.Model):
         unique_together = ('recipe', 'ingredient')
         verbose_name = 'Рецепт-ингредиент'
         verbose_name_plural = 'Рецепты-ингредиенты'
-        ordering = ('recepie__name',)
+        ordering = ('recipe__name',)
 
 
 class Subscription(models.Model):
@@ -143,12 +150,13 @@ class Subscription(models.Model):
     )
 
     def __str__(self):
-        return f'{self.author} подписан на {self.user}'
+        return f'{self.user} подписан на {self.author}'
 
     class Meta:
         unique_together = ('author', 'user')
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+        unique_together = ('author', 'user')
 
 
 class Favorite(models.Model):
@@ -161,6 +169,7 @@ class Favorite(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='Рецепт',
+        related_name='favorited',
         on_delete=models.CASCADE,
     )
 
@@ -171,6 +180,7 @@ class Favorite(models.Model):
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
         ordering = ('recipe__name',)
+        unique_together = ('recipe', 'user')
 
 
 class Purchase(models.Model):
@@ -183,6 +193,7 @@ class Purchase(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='Рецепт',
+        related_name='in_purchase_list',
         on_delete=models.CASCADE,
     )
 
@@ -193,3 +204,4 @@ class Purchase(models.Model):
         verbose_name = 'Покупка'
         verbose_name_plural = 'Покупки'
         ordering = ('recipe__name',)
+

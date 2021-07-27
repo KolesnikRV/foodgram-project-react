@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-9yufu44v%t-c-#5_j1gg2f8w7nu9%-#6%sz5!rt&jr!)^0h96x
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -26,9 +26,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
     'djoser',
+    'users',
     'recipes',
     'colorfield',
 ]
@@ -36,12 +39,15 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'foodram.urls'
 
@@ -94,19 +100,36 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+AUTH_USER_MODEL = 'users.User'
+
 # Rest framework settings
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'common.pagination.PageLimitSetPagination',
+    'SEARCH_PARAM': 'name',
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+}
+
+
+DJOSER = {
+    'HIDE_USERS': False,
+    'SERIALIZERS': {
+        'user': 'users.serializers.CustomUserSerializer',
+    },
+    'PERMISSIONS': {
+        'user': ['rest_framework.permissions.AllowAny'],
+        'user_list': ['rest_framework.permissions.AllowAny'],
+    }
 }
 
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-RU'
 
 TIME_ZONE = 'UTC'
 
@@ -120,9 +143,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'django_static')
 
-STATIC_URL = '/static/'
+STATIC_URL = '/django_static/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'django_media')
+
+MEDIA_URL = '/django_media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
