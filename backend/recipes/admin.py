@@ -1,12 +1,12 @@
 from django.contrib import admin
 
-from .models import (Ingredient, Recipe, Tag, Purchase, Favorite,
-                     Subscription, RecipeIngredient)
+from .models import (Favorite, Ingredient, Purchase, Recipe, RecipeIngredient,
+                     Subscription, Tag)
 
 
 class IngredientAdmin(admin.ModelAdmin):
     list_display = ('name', 'measurement_unit')
-    list_filter = ('name',)
+    search_fields = ('^name',)
 
 
 class RecipeIngredientInline(admin.TabularInline):

@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
-from .models import User
 from recipes.models import Subscription
+
+from .models import User
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -16,4 +17,5 @@ class CustomUserSerializer(serializers.ModelSerializer):
         curr_user = self.context.get('request').user
         if curr_user.is_anonymous:
             return False
-        return Subscription.objects.filter(user=curr_user, author=user).exists()
+        return Subscription.objects.filter(user=curr_user,
+                                           author=user).exists()

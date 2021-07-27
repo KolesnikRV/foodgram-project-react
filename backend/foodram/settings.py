@@ -1,23 +1,18 @@
 import os
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+SECRET_KEY = 'django-insecure-9yufu44v%t-c-#5_j1gg2f8w7nu9%-#6%sz5!rt&jr!)^0h96x'  # .env (DJANGO_SECRET_KEY)
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
+DEBUG = True  # False
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9yufu44v%t-c-#5_j1gg2f8w7nu9%-#6%sz5!rt&jr!)^0h96x'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
-
-
-# Application definition
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']  # .env (DJANGO_ALLOWED_HOSTS)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -69,20 +64,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodram.wsgi.application'
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',  # os.environ.get('DB_ENGINE'),
+        'NAME': 'postgres',  # os.environ.get('DB_NAME'),
+        'USER': 'postgres',  # os.environ.get('POSTGRES_USER'),
+        'PASSWORD': 'postgres',  # os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': 'db',  # os.environ.get('DB_HOST'),
+        'PORT': '5432',  # os.environ.get('DB_PORT'),
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -102,8 +102,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'users.User'
 
-# Rest framework settings
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
@@ -112,7 +110,6 @@ REST_FRAMEWORK = {
     'SEARCH_PARAM': 'name',
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
-
 
 DJOSER = {
     'HIDE_USERS': False,
@@ -126,9 +123,6 @@ DJOSER = {
 }
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/3.2/topics/i18n/
-
 LANGUAGE_CODE = 'ru-RU'
 
 TIME_ZONE = 'UTC'
@@ -140,9 +134,6 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'django_static')
 
 STATIC_URL = '/django_static/'
@@ -151,7 +142,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'django_media')
 
 MEDIA_URL = '/django_media/'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

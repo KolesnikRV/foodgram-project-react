@@ -1,8 +1,7 @@
-from django.core.validators import RegexValidator, MinValueValidator
-from django.db import models
-from django.contrib.auth import get_user_model
-
 from colorfield.fields import ColorField
+from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator, RegexValidator
+from django.db import models
 
 User = get_user_model()
 
@@ -123,6 +122,8 @@ class RecipeIngredient(models.Model):
     )
     amount = models.SmallIntegerField(
         verbose_name='Количество',
+        validators=[MinValueValidator(1, 'Значение не может быть меньше 1')],
+
     )
 
     def __str__(self):
@@ -198,10 +199,10 @@ class Purchase(models.Model):
     )
 
     def __str__(self):
-        return f'{self.recipe.name} в списке покупок у пользователя {self.user}'
+        return (f'{self.recipe.name}'
+                'в списке покупок у пользователя {self.user}')
 
     class Meta:
         verbose_name = 'Покупка'
         verbose_name_plural = 'Покупки'
         ordering = ('recipe__name',)
-

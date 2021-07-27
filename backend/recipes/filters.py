@@ -13,7 +13,7 @@ class CustomFilter(filters.FilterSet):
 
     class Meta:
         model = Recipe
-        fields = ( 'is_favorited', 'is_in_shopping_cart','author', 'tags',)
+        fields = ('is_favorited', 'is_in_shopping_cart', 'author', 'tags')
 
     def recipe_is_favorited(self, queryset, name, value):
         user = self.request.user

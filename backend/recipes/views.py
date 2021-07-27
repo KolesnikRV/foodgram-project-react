@@ -1,27 +1,15 @@
 from django.http.response import HttpResponse
-from rest_framework import viewsets, filters, status, permissions
+from rest_framework import filters, permissions, status, viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from .models import (Ingredient, Recipe, Tag, Purchase, Favorite,
-                     Subscription, RecipeIngredient, User)
-from .serializers import (TagSerializer, RecipeSerializer,
-                          RecipeListSerializer, RecipeMinifiedSerializer,
-                          SubscriptionSerializer, IngredientSerializer)
 from .filters import CustomFilter
-
+from .models import (Favorite, Ingredient, Purchase, Recipe, RecipeIngredient,
+                     Subscription, Tag, User)
 from .permissions import CurrentUserOrAdminOrReadOnly
-
-
-class TestApiView(viewsets.ViewSet):
-    def create(self, request):
-        data = request.data
-
-        for ingreient in data:
-            Ingredient.objects.create(
-                name=ingreient.get('title'),
-                measurement_unit=ingreient.get('dimension')
-        )
+from .serializers import (IngredientSerializer, RecipeListSerializer,
+                          RecipeMinifiedSerializer, RecipeSerializer,
+                          SubscriptionSerializer, TagSerializer)
 
 
 class TagsViewSet(viewsets.ModelViewSet):
@@ -80,7 +68,8 @@ class PurchaseViewSet(viewsets.ViewSet):
             )
 
         filename = "Purchase_list.txt"
-        response = HttpResponse(result_purchase_list, content_type='text/plain')
+        response = HttpResponse(result_purchase_list,
+                                content_type='text/plain')
         response['Content-Disposition'] = (
             'attachment; filename={0}'.format(filename)
         )
@@ -189,7 +178,8 @@ class SubscriptionViewSet(viewsets.GenericViewSet):
         user_id = self.kwargs.get('id')
         user_follow = get_object_or_404(User, pk=user_id)
 
-        subscription = get_object_or_404(Subscription, user=user, author=user_follow)
+        subscription = get_object_or_404(Subscription, user=user,
+                                         author=user_follow)
 
         if not subscription:
             return Response(
@@ -205,5 +195,5 @@ class IngredientsViewSet(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
     filter_backends = (filters.SearchFilter,)
-    search_fields = ['name']
+    search_fields = ['^name']
     pagination_class = None
