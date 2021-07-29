@@ -8,11 +8,11 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-9yufu44v%t-c-#5_j1gg2f8w7nu9%-#6%sz5!rt&jr!)^0h96x'  # .env (DJANGO_SECRET_KEY)
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 DEBUG = True  # False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']  # .env (DJANGO_ALLOWED_HOSTS)
+ALLOWED_HOSTS = ['*'] #os.environ.get('DJANGO_ALLOWED_HOSTS')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -26,8 +26,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'djoser',
-    'users',
     'recipes',
+
+    'users',
     'colorfield',
 ]
 
@@ -64,24 +65,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodram.wsgi.application'
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',  # os.environ.get('DB_ENGINE'),
-        'NAME': 'postgres',  # os.environ.get('DB_NAME'),
-        'USER': 'postgres',  # os.environ.get('POSTGRES_USER'),
-        'PASSWORD': 'postgres',  # os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': 'db',  # os.environ.get('DB_HOST'),
-        'PORT': '5432',  # os.environ.get('DB_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': os.environ.get('DB_ENGINE'),
+#         'NAME': os.environ.get('DB_NAME'),
+#         'USER': os.environ.get('POSTGRES_USER'),
+#         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+#         'HOST': os.environ.get('DB_HOST'),
+#         'PORT': os.environ.get('DB_PORT'),
+#     }
+# }
 
 
 AUTH_PASSWORD_VALIDATORS = [

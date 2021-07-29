@@ -20,5 +20,10 @@
 - $: docker-compose exec backend python manage.py createsuperuser
 ### Или использовать пользователя admin@admin.ru:admin
 
+# Тестовый сервер
+![foodram workflow](https://github.com/KolesnikRV/foodgram-project-react/actions/workflows/yamdb_workflow.yaml/badge.svg?branch=main)
+
+[Test Server](http://130.193.51.249/)
+
 # Автор
 ## Студент яндекс практикум 12 когорта Роман Колесник

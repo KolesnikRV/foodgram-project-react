@@ -2,9 +2,10 @@ from django.http.response import HttpResponse
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from rest_framework.decorators import action
 
 from .filters import CustomFilter
-from .models import (Favorite, Ingredient, Purchase, Recipe, RecipeIngredient,
+from .models import (Favorite, Ingredient, Purchase, Recipe,
                      Subscription, Tag, User)
 from .permissions import CurrentUserOrAdminOrReadOnly
 from .serializers import (IngredientSerializer, RecipeListSerializer,
@@ -25,7 +26,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
     filter_class = CustomFilter
 
     def get_serializer_class(self):
-        print(self.request.method)
         if self.request.method in ('GET',):
             return RecipeListSerializer
         return RecipeSerializer
@@ -35,32 +35,13 @@ class RecipesViewSet(viewsets.ModelViewSet):
         context.update({'request': self.request})
         return context
 
-
-class PurchaseViewSet(viewsets.ViewSet):
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def list(self, request, *args, **kwargs):
+    @action(detail=False, permission_classes=[permissions.IsAuthenticated])
+    def download_shopping_cart(self, request, *args, **kwargs):
         user = self.request.user
         purchase_queryset = user.purchase_list.all()
-        purchase_list = {}
-        for purchase in purchase_queryset:
-            ingredients = RecipeIngredient.objects.filter(
-                recipe=purchase.recipe
-            ).prefetch_related('ingredient')
-
-            for ingredient in ingredients:
-                name = ingredient.ingredient.name
-                measurement_unit = ingredient.ingredient.measurement_unit
-                amount = ingredient.amount
-                if ingredient.ingredient.name in purchase_list:
-                    purchase_list[name]['measurement_unit'] += measurement_unit
-                    purchase_list[name]['amount'] += amount
-                else:
-                    purchase_list[name] = {
-                        'measurement_unit': measurement_unit,
-                        'amount': amount
-                    }
+        purchase_list = Purchase.get_purchase_list(purchase_queryset)
         result_purchase_list = []
+
         for ingredient, unit in purchase_list.items():
             result_purchase_list.append(
                 f"{ingredient} ({unit['measurement_unit']}) — {unit['amount']}"
@@ -75,71 +56,75 @@ class PurchaseViewSet(viewsets.ViewSet):
         )
         return response
 
-    def get(self, request, *args, **kwargs):
+    @action(detail=False, methods=['GET', 'DELETE'],
+            permission_classes=[permissions.IsAuthenticated])
+    def shopping_cart(self, request, *args, **kwargs):
         user = self.request.user
-        recipe_id = self.kwargs.get('id')
+        recipe_id = self.kwargs.get('pk')
         recipe = get_object_or_404(Recipe, pk=recipe_id)
-        if Purchase.objects.filter(user=user, recipe=recipe).exists():
-            return Response('Рецепт уже в списке покупок',
-                            status=status.HTTP_400_BAD_REQUEST)
 
-        Purchase.objects.create(user=user, recipe=recipe)
-        serializer = RecipeMinifiedSerializer(recipe)
+        if request.method == 'GET':
+            if Purchase.objects.filter(user=user, recipe=recipe).exists():
+                return Response('Рецепт уже в списке покупок',
+                                status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            Purchase.objects.create(user=user, recipe=recipe)
+            serializer = RecipeMinifiedSerializer(recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete(self, request, *args, **kwargs):
+        elif request.method == 'DELETE':
+            user = self.request.user
+            recipe_id = self.kwargs.get('pk')
+            recipe = get_object_or_404(Recipe, pk=recipe_id)
+            purchase = get_object_or_404(Purchase, user=user, recipe=recipe)
+
+            if not purchase:
+                return Response(
+                    'Рецепта нет в списке покупок.',
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            purchase.delete()
+            return Response('Рецепт удалён из списка покупок.',
+                            status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['GET', 'DELETE'],
+            permission_classes=[permissions.IsAuthenticated])
+    def favorite(self, request, *args, **kwargs):
         user = self.request.user
-        recipe_id = self.kwargs.get('id')
+        recipe_id = self.kwargs.get('pk')
         recipe = get_object_or_404(Recipe, pk=recipe_id)
-        purchase = get_object_or_404(Purchase, user=user, recipe=recipe)
 
-        if not purchase:
-            return Response(
-                'Рецепта нет в списке покупок.',
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        purchase.delete()
-        return Response('Рецепт удалён из списка покупок.',
-                        status=status.HTTP_204_NO_CONTENT)
+        if request.method == 'GET':
+            if Favorite.objects.filter(user=user, recipe=recipe).exists():
+                return Response('Рецепт уже в избранном.',
+                                status=status.HTTP_400_BAD_REQUEST)
 
+            Favorite.objects.create(user=user, recipe=recipe)
+            serializer = RecipeMinifiedSerializer(recipe)
 
-class FavoriteViewSet(viewsets.ViewSet):
-    permission_classes = (permissions.IsAuthenticated,)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def get(self, request, *args, **kwargs):
-        user = self.request.user
-        recipe_id = self.kwargs.get('id')
-        recipe = get_object_or_404(Recipe, pk=recipe_id)
-        if Favorite.objects.filter(user=user, recipe=recipe).exists():
-            return Response('Рецепт уже в избранном.',
-                            status=status.HTTP_400_BAD_REQUEST)
+        elif request.method == 'DELETE':
+            user = self.request.user
+            recipe_id = self.kwargs.get('pk')
+            recipe = get_object_or_404(Recipe, pk=recipe_id)
+            favorite = get_object_or_404(Favorite, user=user, recipe=recipe)
 
-        Favorite.objects.create(user=user, recipe=recipe)
-        serializer = RecipeMinifiedSerializer(recipe)
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def delete(self, request, *args, **kwargs):
-        user = self.request.user
-        recipe_id = self.kwargs.get('id')
-        recipe = get_object_or_404(Recipe, pk=recipe_id)
-        favorite = get_object_or_404(Favorite, user=user, recipe=recipe)
-
-        if not favorite:
-            return Response(
-                'Рецепта нет в избранном.',
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        favorite.delete()
-        return Response('Рецепт удалён из избранного.',
-                        status=status.HTTP_204_NO_CONTENT)
+            if not favorite:
+                return Response(
+                    'Рецепта нет в избранном.',
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            favorite.delete()
+            return Response('Рецепт удалён из избранного.',
+                            status=status.HTTP_204_NO_CONTENT)
 
 
 class SubscriptionViewSet(viewsets.GenericViewSet):
     permission_classes = (permissions.IsAuthenticated,)
 
-    def list(self, request, *args, **kwargs):
+    @action(detail=False)
+    def subscriptions(self, request, *args, **kwargs):
         user = self.request.user
         subscription = User.objects.filter(following__user=user)
 
@@ -153,42 +138,40 @@ class SubscriptionViewSet(viewsets.GenericViewSet):
                                             context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def get(self, request, *args, **kwargs):
+    @action(detail=True, methods=['GET', 'DELETE'])
+    def subscribe(self, request, *args, **kwargs):
         user = self.request.user
-        user_id = self.kwargs.get('id')
-        if user.id == user_id:
-            return Response('Нельзя подписаться на самого себя.',
-                            status=status.HTTP_400_BAD_REQUEST)
-
+        user_id = self.kwargs.get('pk')
+        print(user_id)
         user_follow = get_object_or_404(User, pk=user_id)
 
-        if Subscription.objects.filter(user=user, author=user_follow).exists():
-            return Response('Вы уже подписаны на этого пользователя.',
-                            status=status.HTTP_400_BAD_REQUEST)
+        if request.method == 'GET':
+            if user.id == user_id:
+                return Response('Нельзя подписаться на самого себя.',
+                                status=status.HTTP_400_BAD_REQUEST)
 
-        Subscription.objects.create(user=user, author=user_follow)
-        serializer = SubscriptionSerializer(user_follow,
-                                            context={'request': request})
+            if Subscription.objects.filter(user=user,
+                                           author=user_follow).exists():
+                return Response('Вы уже подписаны на этого пользователя.',
+                                status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            Subscription.objects.create(user=user, author=user_follow)
+            serializer = SubscriptionSerializer(user_follow,
+                                                context={'request': request})
 
-    def delete(self, request, *args, **kwargs):
-        print('_WTF')
-        user = self.request.user
-        user_id = self.kwargs.get('id')
-        user_follow = get_object_or_404(User, pk=user_id)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        subscription = get_object_or_404(Subscription, user=user,
-                                         author=user_follow)
-
-        if not subscription:
-            return Response(
-                'Вы не подписаны на этого пользователя.',
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        subscription.delete()
-        return Response('Подписка отменена.',
-                        status=status.HTTP_204_NO_CONTENT)
+        elif request.method == 'DELETE':
+            subscription = get_object_or_404(Subscription, user=user,
+                                            author=user_follow)
+            if not subscription:
+                return Response(
+                    'Вы не подписаны на этого пользователя.',
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            subscription.delete()
+            return Response('Подписка отменена.',
+                            status=status.HTTP_204_NO_CONTENT)
 
 
 class IngredientsViewSet(viewsets.ModelViewSet):

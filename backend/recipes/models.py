@@ -69,7 +69,7 @@ class Recipe(models.Model):
         verbose_name='Автор',
         related_name='recipes',
         help_text='Укажите автора рецепта',
-        on_delete=models.SET('Пользователь удалён'),
+        on_delete=models.CASCADE,
     )
     name = models.CharField(
         verbose_name='Название',
@@ -88,6 +88,7 @@ class Recipe(models.Model):
         Ingredient,
         verbose_name='Ингредиенты',
         help_text='Укажите ингредиенты и их количество',
+        through='RecipeIngredient',
     )
     tags = models.ManyToManyField(
         Tag,
@@ -206,3 +207,26 @@ class Purchase(models.Model):
         verbose_name = 'Покупка'
         verbose_name_plural = 'Покупки'
         ordering = ('recipe__name',)
+
+    @classmethod
+    def get_purchase_list(cls, purchase_queryset):
+        purchase_list = {}
+        for purchase in purchase_queryset:
+            ingredients = RecipeIngredient.objects.filter(
+                recipe=purchase.recipe
+            ).prefetch_related('ingredient')
+
+            for ingredient in ingredients:
+                name = ingredient.ingredient.name
+                measurement_unit = ingredient.ingredient.measurement_unit
+                amount = ingredient.amount
+                if ingredient.ingredient.name in purchase_list:
+                    purchase_list[name]['measurement_unit'] += measurement_unit
+                    purchase_list[name]['amount'] += amount
+                else:
+                    purchase_list[name] = {
+                        'measurement_unit': measurement_unit,
+                        'amount': amount
+                    }
+
+        return purchase_list
