@@ -1,6 +1,5 @@
-from rest_framework import serializers
-
 from recipes.models import Subscription
+from rest_framework import serializers
 
 from .models import User
 
