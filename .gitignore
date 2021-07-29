@@ -60,8 +60,8 @@ coverage.xml
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-django-static/
-django-media/
+django_static/
+django_media/
 
 # Flask stuff:
 instance/
