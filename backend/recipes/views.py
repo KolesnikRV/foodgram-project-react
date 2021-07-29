@@ -56,7 +56,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         )
         return response
 
-    @action(detail=False, methods=['GET', 'DELETE'],
+    @action(detail=True, methods=['GET', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
     def shopping_cart(self, request, *args, **kwargs):
         user = self.request.user
@@ -87,7 +87,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             return Response('Рецепт удалён из списка покупок.',
                             status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=['GET', 'DELETE'],
+    @action(detail=True, methods=['GET', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, *args, **kwargs):
         user = self.request.user
