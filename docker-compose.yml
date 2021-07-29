@@ -11,7 +11,7 @@ services:
   frontend:
     image: kolesnikrv/foodram_frontend:latest
     volumes:
-      - frontend_data:/frontend/result_build/
+      - frontend_data:/frontend/result_build/build/
 
   nginx:
     image: nginx:1.19.3
