@@ -11,12 +11,7 @@ class IngredientAdmin(admin.ModelAdmin):
 
 class RecipeIngredientInline(admin.TabularInline):
     model = RecipeIngredient
-    fields = ('ingredient', 'amount', 'measurement_unit')
-    readonly_fields = ('measurement_unit')
     fk_name = 'recipe'
-
-    def measurement_unit(self, instance):
-        return instance.ingredient.measurement_unit
 
 
 class RecipeAdmin(admin.ModelAdmin):

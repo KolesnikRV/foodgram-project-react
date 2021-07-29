@@ -142,7 +142,6 @@ class SubscriptionViewSet(viewsets.GenericViewSet):
     def subscribe(self, request, *args, **kwargs):
         user = self.request.user
         user_id = self.kwargs.get('pk')
-        print(user_id)
         user_follow = get_object_or_404(User, pk=user_id)
 
         if request.method == 'GET':

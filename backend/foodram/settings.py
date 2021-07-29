@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
-DEBUG = True  # False
+DEBUG = False
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS').split()
 
@@ -64,6 +64,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'foodram.wsgi.application'
+
 
 DATABASES = {
     'default': {
