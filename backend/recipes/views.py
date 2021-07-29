@@ -1,12 +1,12 @@
 from django.http.response import HttpResponse
 from rest_framework import filters, permissions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.decorators import action
 
 from .filters import CustomFilter
-from .models import (Favorite, Ingredient, Purchase, Recipe,
-                     Subscription, Tag, User)
+from .models import (Favorite, Ingredient, Purchase, Recipe, Subscription, Tag,
+                     User)
 from .permissions import CurrentUserOrAdminOrReadOnly
 from .serializers import (IngredientSerializer, RecipeListSerializer,
                           RecipeMinifiedSerializer, RecipeSerializer,
