@@ -221,7 +221,6 @@ class Purchase(models.Model):
                 measurement_unit = ingredient.ingredient.measurement_unit
                 amount = ingredient.amount
                 if ingredient.ingredient.name in purchase_list:
-                    purchase_list[name]['measurement_unit'] += measurement_unit
                     purchase_list[name]['amount'] += amount
                 else:
                     purchase_list[name] = {

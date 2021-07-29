@@ -24,6 +24,7 @@
 ![foodram workflow](https://github.com/KolesnikRV/foodgram-project-react/actions/workflows/foodram_workflow.yml/badge.svg?branch=master)
 
 [Test Server](http://130.193.51.249/)
+### Администратор admin@admin.ru:admin
 
 # Автор
 ## Студент яндекс практикум 12 когорта Роман Колесник

@@ -11,6 +11,7 @@ class IngredientAdmin(admin.ModelAdmin):
 
 class RecipeIngredientInline(admin.TabularInline):
     model = RecipeIngredient
+    fields = ('ingredient', 'amount', 'ingredient__measurement_unit')
     fk_name = 'recipe'
 
 
