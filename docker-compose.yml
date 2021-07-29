@@ -9,9 +9,7 @@ services:
       - ./backend/.env
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: ./Dockerfile
+    image: kolesnikrv/foodram_frontend:latest
     volumes:
       - ./frontend/:/frontend/result_build/
 
@@ -29,9 +27,7 @@ services:
       - media_volume:/backend/django_media
 
   django:
-    build:
-      context: ./backend
-      dockerfile: ./Dockerfile
+    image: kolesnikrv/foodram:latest
     restart: unless-stopped
     volumes:
       - static_volume:/backend/django_static
