@@ -11,12 +11,6 @@ do
     sleep 2
 done
 
-until python manage.py loaddata ./data/data.json
-do
-    echo "Waiting for load dump data..."
-    sleep 2
-done
-
 until python manage.py collectstatic --noinput
 do
     echo "Waiting for collect static..."
