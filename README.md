@@ -21,7 +21,7 @@
 ### Или использовать пользователя admin@admin.ru:admin
 
 # Тестовый сервер
-![foodram workflow](https://github.com/KolesnikRV/foodgram-project-react/actions/workflows/foodram_workflow.yml/badge.svg?branch=main)
+![foodram workflow](https://github.com/KolesnikRV/foodgram-project-react/actions/workflows/foodram_workflow.yml/badge.svg?branch=master)
 
 [Test Server](http://130.193.51.249/)
 
