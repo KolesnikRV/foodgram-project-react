@@ -163,7 +163,7 @@ class SubscriptionViewSet(viewsets.GenericViewSet):
 
         elif request.method == 'DELETE':
             subscription = get_object_or_404(Subscription, user=user,
-                                            author=user_follow)
+                                             author=user_follow)
             if not subscription:
                 return Response(
                     'Вы не подписаны на этого пользователя.',

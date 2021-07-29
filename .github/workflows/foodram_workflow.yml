@@ -48,6 +48,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
+          context: ./backend/
           tags: ${{ secrets.DOCKER_USERNAME }}/foodram:latest
 
   deploy:
@@ -63,9 +64,9 @@ jobs:
         stack_file_name: docker-compose.yaml
         script: |
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodram:latest
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/foodram_frontend:latest
           sudo docker-compose stop
-          sudo docker-compose rm backend
-          sudo docker-compose rm frontend
+          sudo docker-compose rm django
           touch .env
           echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
           echo DB_NAME=${{ secrets.DB_NAME }} >> .env
@@ -81,15 +82,15 @@ jobs:
     if: always()
     needs: deploy
     steps:
-    - name: send message if push to main branch
-      if: github.ref == 'refs/heads/main' && needs.deploy.result == 'success'
+    - name: send message if push to master branch
+      if: github.ref == 'refs/heads/master' && needs.deploy.result == 'success'
       uses: appleboy/telegram-action@master
       with:
         to: ${{ secrets.TELEGRAM_TO }}
         token: ${{ secrets.TELEGRAM_TOKEN }}
         message: ${{ github.workflow }} успешно выполнен!
-    - name: send message if push not to main branch
-      if: github.ref != 'refs/heads/main' && needs.deploy.result != 'success'
+    - name: send message if push not to master branch
+      if: github.ref != 'refs/heads/master' && needs.deploy.result != 'success'
       uses: appleboy/telegram-action@master
       with:
         to: ${{ secrets.TELEGRAM_TO }}

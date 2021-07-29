@@ -13,17 +13,5 @@ router.register('users', SubscriptionViewSet, basename='users')
 
 
 urlpatterns = [
-#     path('recipes/download_shopping_cart/',
-#          PurchaseViewSet.as_view()),
-#     path('recipes/<int:id>/shopping_cart/',
-#          PurchaseViewSet.as_view({'get': 'get', 'delete': 'delete'})),
-#     path('recipes/<int:id>/favorite/',
-#          FavoriteViewSet.as_view({'get': 'get', 'delete': 'delete'})),
-#     path('users/subscriptions/',
-#          SubscriptionViewSet.as_view({'get': 'list'})),
-#     path('users/<int:id>/subscribe/',
-#          SubscriptionViewSet.as_view({'get': 'get', 'delete': 'delete'})),
      path('', include(router.urls))
 ]
-
-# urlpatterns += router.urls

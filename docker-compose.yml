@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3.7'
 services:
   db:
     image: postgres:12.4
@@ -10,8 +10,8 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: ./frontend/Dockerfile
+      context: ./frontend
+      dockerfile: ./Dockerfile
     volumes:
       - ./frontend/:/frontend/result_build/
 
@@ -28,12 +28,11 @@ services:
       - static_volume:/backend/django_static
       - media_volume:/backend/django_media
 
-  backend:
+  django:
     build:
-      context: .
-      dockerfile: ./backend/Dockerfile
+      context: ./backend
+      dockerfile: ./Dockerfile
     restart: unless-stopped
-    entrypoint: /backend/start/wsgi-entrypoint.sh
     volumes:
       - static_volume:/backend/django_static
       - media_volume:/backend/django_media
