@@ -55,7 +55,7 @@ class Ingredient(models.Model):
     )
 
     def __str__(self):
-        return self.name + ' - ' + '(' + self.measurement_unit + ')'
+        return f'{self.name}  -  ({self.measurement_unit})'
 
     class Meta:
         verbose_name = 'Ингредиент'

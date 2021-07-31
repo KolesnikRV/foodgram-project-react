@@ -28,7 +28,7 @@ class CustomFilter(filters.FilterSet):
         return queryset
 
 
-def purchase_recipe_imit_filter(request, queryset):
+def purchase_recipe_limit_filter(request, queryset):
     recipes_limit = request.query_params.get('recipes_limit')
     if recipes_limit:
         return queryset[:int(recipes_limit)]

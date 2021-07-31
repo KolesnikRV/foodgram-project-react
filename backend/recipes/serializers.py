@@ -3,7 +3,7 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from users.serializers import CustomUserSerializer
 
-from .filters import purchase_recipe_imit_filter
+from .filters import purchase_recipe_limit_filter
 from .models import (Favorite, Ingredient, Purchase, Recipe, RecipeIngredient,
                      Tag, User)
 
@@ -165,9 +165,8 @@ class SubscriptionSerializer(CustomUserSerializer):
 
     def recipes_limit(self, user):
         recipes_query = user.recipes.all()
-        recipes_query = purchase_recipe_imit_filter(
+        recipes_query = purchase_recipe_limit_filter(
             self.context.get('request'),
             recipes_query
         )
-        print(recipes_query)
         return RecipeMinifiedSerializer(recipes_query, many=True).data
