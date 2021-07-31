@@ -27,7 +27,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'djoser',
     'recipes',
-
     'users',
     'colorfield',
 ]

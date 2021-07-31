@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
+from .custom_functions import get_create_delete_related_response
 from .filters import CustomFilter
 from .models import (Favorite, Ingredient, Purchase, Recipe, Subscription, Tag,
                      User)
@@ -79,15 +80,19 @@ class RecipesViewSet(viewsets.ModelViewSet):
             permission_classes=[permissions.IsAuthenticated])
     def shopping_cart(self, request, *args, **kwargs):
 
-        return get_response(request, Recipe, Purchase,
-                            RecipeMinifiedSerializer)
+        instance = get_object_or_404(Recipe, pk=kwargs.get('pk'))
+        return get_create_delete_related_response(
+            request, Purchase, RecipeMinifiedSerializer,
+            RESPONSE_MESSAGES['Purchase'], recipe=instance)
 
     @action(detail=True, methods=['GET', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, *args, **kwargs):
 
-        return get_response(request, Recipe, Favorite,
-                            RecipeMinifiedSerializer)
+        instance = get_object_or_404(Recipe, pk=kwargs.get('pk'))
+        return get_create_delete_related_response(
+            request, Favorite, RecipeMinifiedSerializer,
+            RESPONSE_MESSAGES['Favorite'], recipe=instance)
 
 
 class SubscriptionViewSet(viewsets.GenericViewSet):
@@ -112,11 +117,13 @@ class SubscriptionViewSet(viewsets.GenericViewSet):
     def subscribe(self, request, *args, **kwargs):
 
         if self.request.user.id == self.kwargs.get('pk'):
-            return Response(RESPONSE_MESSAGES.get(''),
+            return Response(RESPONSE_MESSAGES['Subscription'].get('myself'),
                             status=status.HTTP_400_BAD_REQUEST)
 
-        return get_response(request, User, Subscription,
-                            SubscriptionSerializer)
+        instance = get_object_or_404(User, pk=kwargs.get('pk'))
+        return get_create_delete_related_response(
+            request, Subscription, SubscriptionSerializer,
+            RESPONSE_MESSAGES['Subscription'], author=instance)
 
 
 class IngredientsViewSet(viewsets.ModelViewSet):
@@ -125,44 +132,3 @@ class IngredientsViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ['^name']
     pagination_class = None
-
-
-def get_response(request, model, create_delete_model, serializer):
-    user = request.user
-    pk = request.parser_context['kwargs'].get('pk')
-    instance = get_object_or_404(model, pk=pk)
-    model_kwags = {}
-    model_kwags['user'] = user
-
-    if model.__name__ == 'User':
-        model_kwags['author'] = instance
-    elif model.__name__ == 'Recipe':
-        model_kwags['recipe'] = instance
-
-    if request.method == 'GET':
-        if create_delete_model.objects.filter(**model_kwags).exists():
-            return Response(
-                RESPONSE_MESSAGES.get(
-                    create_delete_model.__name__).get('exists'),
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        create_delete_model.objects.create(**model_kwags)
-        serializer = serializer(instance, context={'request': request})
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    elif request.method == 'DELETE':
-        create_delete_instance = get_object_or_404(create_delete_model,
-                                                   **model_kwags)
-        if not create_delete_instance:
-            return Response(
-                RESPONSE_MESSAGES.get(
-                    create_delete_model.__name__).get('not'),
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        create_delete_instance.delete()
-        return Response(
-            RESPONSE_MESSAGES.get(create_delete_model.__name__).get('deleted'),
-            status=status.HTTP_204_NO_CONTENT,
-        )
