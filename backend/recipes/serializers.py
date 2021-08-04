@@ -134,7 +134,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         RecipeIngredient.objects.filter(recipe=instance).delete()
         instance.name = validated_data.get('name')
-        instance.image = validated_data.get('image')
+        if validated_data.get('image') is not None:
+            instance.image = validated_data.get('image')
         instance.text = validated_data.get('text')
         instance.cooking_time = validated_data.get('cooking_time')
         instance.save()
